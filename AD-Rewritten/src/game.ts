@@ -1,55 +1,54 @@
-
-class Game {
+/**
+ * The main game loop class to handle updates and rendering with delta time.
+ */
+class GameLoop {
     private lastTimestamp: number = 0;
-    // Velocity is defined in units per second (e.g., 100 pixels/second)
-    // private objectVelocity: number = 100; 
-    // private objectPositionX: number = 0;
+    // Speed is defined in units per second (e.g., pixels/second)
+    private objectSpeed: number = 100; 
+    private objectPosition: number = 0;
+    private animationId: number | null = null;
 
-    private antimatter: number = 10;
-    private tickspeed: number = 1;
-
-
-    public start(): void {
-        // Use performance.now() for better precision than Date.now()
+    start(): void {
+        // Use performance.now() for the initial timestamp
         this.lastTimestamp = performance.now(); 
-        requestAnimationFrame(this.gameLoop.bind(this));
+        this.animationId = requestAnimationFrame(this.update.bind(this));
     }
 
-    private gameLoop(timestamp: number): void {
-        // Calculate the time elapsed since the last frame in milliseconds
+    stop(): void {
+        if (this.animationId !== null) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+
+    private update(timestamp: number): void {
+        // Calculate delta time in milliseconds
         const deltaTimeMs = timestamp - this.lastTimestamp; 
-        // Convert delta time to seconds
-        const deltaTimeSecs = deltaTimeMs / 1000; 
+        
+        // Convert delta time to seconds, which is better for physics/movement calculations
+        const deltaTimeSecs = deltaTimeMs / 1000.0; 
 
         // Update the last timestamp for the next frame
         this.lastTimestamp = timestamp; 
 
-        // Call update logic with the delta time
-        this.update(deltaTimeSecs);
-        this.render();
+        // --- Apply Delta Time to Logic ---
+        // Consistent movement: position change = speed * delta time
+        this.objectPosition += this.objectSpeed * deltaTimeSecs;
+        
+        // Log the position and delta time (for demonstration)
+        console.log(`Delta Time (ms): ${deltaTimeMs.toFixed(2)}, Position: ${this.objectPosition.toFixed(2)}`);
 
-        // Continue the loop
-        requestAnimationFrame(this.gameLoop.bind(this));
+        // Call the next frame
+        this.animationId = requestAnimationFrame(this.update.bind(this));
     }
-
-    private update(deltaTime: number): void {
-        // Apply delta time to movement calculations for consistent speed
-        // this.objectPositionX += this.objectVelocity * deltaTime; 
-        // console.log(`Updated position to: ${this.objectPositionX.toFixed(2)} at delta time: ${deltaTime.toFixed(4)}s`);
-
-        this.antimatter = 10;
-    }
-
-    private render(): void {
-        // Rendering logic goes here
-    }
-
-    public getAntimatter(): number {
-        return this.antimatter;
-    }
-
-
 }
 
-const game = new Game();
+// To run the loop:
+const game = new GameLoop();
 game.start();
+
+// To stop the loop after some time (optional):
+// setTimeout(() => {
+//     game.stop();
+//     console.log("Game loop stopped.");
+// }, 5000); 
