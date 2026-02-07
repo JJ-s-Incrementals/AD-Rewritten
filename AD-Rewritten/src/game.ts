@@ -1,54 +1,56 @@
-/**
- * The main game loop class to handle updates and rendering with delta time.
- */
-class GameLoop {
-    private lastTimestamp: number = 0;
-    // Speed is defined in units per second (e.g., pixels/second)
-    private objectSpeed: number = 100; 
-    private objectPosition: number = 0;
-    private animationId: number | null = null;
+// Define a main Game class to manage game state and logic
+class Game {
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private lastTime: number = 0;
 
-    start(): void {
-        // Use performance.now() for the initial timestamp
-        this.lastTimestamp = performance.now(); 
-        this.animationId = requestAnimationFrame(this.update.bind(this));
+    constructor(canvasId: string) {
+        this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        this.ctx = this.canvas.getContext('2d')!; // '!' asserts non-null
     }
 
-    stop(): void {
-        if (this.animationId !== null) {
-            cancelAnimationFrame(this.animationId);
-            this.animationId = null;
-        }
+    // The main loop function that will be called recursively
+    private loop(timestamp: number) {
+        // Calculate delta time (time elapsed since last frame)
+        // This helps make movement consistent across different hardware
+        const deltaTime = timestamp - this.lastTime;
+        this.lastTime = timestamp;
+
+        // 1. Update game state based on deltaTime
+        this.update(deltaTime);
+
+        // 2. Clear the canvas for the next frame
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // 3. Draw all game elements
+        this.draw();
+
+        // 4. Request the next frame from the browser
+        requestAnimationFrame(this.loop.bind(this));
     }
 
-    private update(timestamp: number): void {
-        // Calculate delta time in milliseconds
-        const deltaTimeMs = timestamp - this.lastTimestamp; 
-        
-        // Convert delta time to seconds, which is better for physics/movement calculations
-        const deltaTimeSecs = deltaTimeMs / 1000.0; 
+    // Method to start the game loop
+    public start() {
+        requestAnimationFrame(this.loop.bind(this));
+    }
 
-        // Update the last timestamp for the next frame
-        this.lastTimestamp = timestamp; 
+    private update(deltaTime: number) {
+        // Game logic goes here (e.g., move player, check collisions)
+        // Use deltaTime for smooth movement: entity.position += entity.speed * deltaTime;
+        console.log("Updating game state. Delta time:", deltaTime);
+    }
 
-        // --- Apply Delta Time to Logic ---
-        // Consistent movement: position change = speed * delta time
-        this.objectPosition += this.objectSpeed * deltaTimeSecs;
-        
-        // Log the position and delta time (for demonstration)
-        console.log(`Delta Time (ms): ${deltaTimeMs.toFixed(2)}, Position: ${this.objectPosition.toFixed(2)}`);
+    private draw() {
+        // Rendering code goes here (e.g., draw player, background, etc.)
+        console.log("Drawing game elements");
+        this.ctx.fillStyle = 'red';
+        this.ctx.fillRect(10, 10, 50, 50); // Example drawing
 
-        // Call the next frame
-        this.animationId = requestAnimationFrame(this.update.bind(this));
     }
 }
 
-// To run the loop:
-const game = new GameLoop();
+// Entry point: set up canvas and start the game
+const game = new Game('gameCanvas');
 game.start();
 
-// To stop the loop after some time (optional):
-// setTimeout(() => {
-//     game.stop();
-//     console.log("Game loop stopped.");
-// }, 5000); 
+

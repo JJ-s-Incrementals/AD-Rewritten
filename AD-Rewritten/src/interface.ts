@@ -1,9 +1,10 @@
 export function ADInterface()
 {
     return `
+
     <div>
         <p>
-            "You have () antimatter."
+            "You have <span id='antimatter'>10</span> antimatter."
             "(getting ()/s)"
         </p>
         <p>
